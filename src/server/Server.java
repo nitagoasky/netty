@@ -11,6 +11,7 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 
 public class Server {
 
@@ -23,18 +24,18 @@ public class Server {
                     protected void initChannel(Channel channel) throws Exception {
                         channel.pipeline().addLast(new StringDecoder());
                         channel.pipeline().addLast(new StringEncoder());
-                        channel.pipeline().addLast(new SimpleChannelInboundHandler<String>() {
+                        channel.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                             private ChannelHandlerContext innerCtx;
                             ChannelFuture connectFuture;
                             @Override
                             public void channelActive(ChannelHandlerContext ctx) throws Exception {
-                                innerCtx = ctx;
                                 Bootstrap bootstrap = new Bootstrap();
                                 bootstrap.group(ctx.channel().eventLoop());
                                 bootstrap.channel(NioSocketChannel.class)
                                         .handler(new SimpleChannelInboundHandler<ByteBuf>() {
                                             @Override
                                             public void channelActive(ChannelHandlerContext ctx) throws Exception {
+                                                innerCtx = ctx;
                                                 System.out.println("客户端连接服务");
                                             }
 
@@ -42,14 +43,18 @@ public class Server {
                                             protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
                                                 byte[] dst = new byte[byteBuf.readableBytes()];
                                                 byteBuf.readBytes(dst);
-                                                System.out.println(dst);
+                                                System.out.println(Arrays.toString(dst));
+//                                                ctx.writeAndFlush(dst);
                                             }
                                         });
                                 connectFuture = bootstrap.connect(new InetSocketAddress(8888));
                             }
 
                             @Override
-                            protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
+                            protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf s) throws Exception {
+                                byte[] dst = new byte[s.readableBytes()];
+                                s.readBytes(dst);
+                                System.out.println(dst);
                                 if (connectFuture.isDone()) {
                                     if (innerCtx != null && innerCtx.channel().isActive()) {
                                         innerCtx.writeAndFlush(s);
