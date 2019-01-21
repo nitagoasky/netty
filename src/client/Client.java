@@ -30,7 +30,7 @@ public class Client {
                             @Override
                             protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
                                 System.out.println(s);
-                                channelHandlerContext.channel().writeAndFlush(s);
+                                channelHandlerContext.channel().writeAndFlush("gaotian");
                             }
                         });
                     }
