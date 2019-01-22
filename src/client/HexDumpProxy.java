@@ -15,13 +15,11 @@ import java.net.InetSocketAddress;
 public class HexDumpProxy {
 
     //中间IP和端口
-    private static final String PROXY_IP = "127.0.0.1";
-    static final int PROXY_PORT = 9000;
 
     public static void main(String[] args) throws Exception
     {
 
-        log.info("**********************启动代理 ********************** Ip:{} port:{}",PROXY_IP,PROXY_PORT);
+        log.info("**********************启动代理 ********************** Ip:{} port:{}","127.0.0.1","9000");
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try
@@ -33,7 +31,7 @@ public class HexDumpProxy {
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new HexDumpProxyInitializer())
                     .childOption(ChannelOption.AUTO_READ, false)
-                    .bind(new InetSocketAddress(PROXY_IP, PROXY_PORT))  //代理端口
+                    .bind(new InetSocketAddress("127.0.0.1", 9000))  //代理端口
                     .sync().channel().closeFuture().sync();
         }
         finally

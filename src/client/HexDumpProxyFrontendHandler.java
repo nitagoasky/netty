@@ -38,23 +38,20 @@ public class HexDumpProxyFrontendHandler extends ChannelInboundHandlerAdapter {
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline p = ch.pipeline();
 
-                        //p.addLast(new LoggingHandler(LogLevel.INFO));
+                        p.addLast(new LoggingHandler(LogLevel.INFO));
                         p.addLast(new HexDumpProxyBackendHandler(inboundChannel),new LoggingHandler(LogLevel.INFO));
                     }
                 });
         ChannelFuture f = b.connect("127.0.0.1", 8888);
         outbound2BankChannel = f.channel();
 
-        f.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                if (future.isSuccess()) {
-                    // connection complete start to read first data
-                    inboundChannel.read();
-                } else {
-                    // Close the connection if the connection attempt has failed.
-                    inboundChannel.close();
-                }
+        f.addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                // connection complete start to read first data
+                inboundChannel.read();
+            } else {
+                // Close the connection if the connection attempt has failed.
+                inboundChannel.close();
             }
         });
 
@@ -68,22 +65,17 @@ public class HexDumpProxyFrontendHandler extends ChannelInboundHandlerAdapter {
         log.debug("数据来自:{}",fromAddress.getHostName());
 
         if (outbound2BankChannel.isActive()) {
-            outbound2BankChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) {
-                    if (future.isSuccess()) {
-                        InetSocketAddress toAddress = (InetSocketAddress)outbound2BankChannel.remoteAddress();
-                        log.debug("数据发往:{}",toAddress.getHostName());
-                        // was able to flush out data, start to read the next chunk
-                        ctx.channel().read();
-                    } else {
-                        future.channel().close();
-                    }
+            outbound2BankChannel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    InetSocketAddress toAddress = (InetSocketAddress)outbound2BankChannel.remoteAddress();
+                    log.debug("数据发往:{}",toAddress.getHostName());
+                    // was able to flush out data, start to read the next chunk
+                    ctx.channel().read();
+                } else {
+                    future.channel().close();
                 }
             });
         }
-
-
     }
 
     @Override

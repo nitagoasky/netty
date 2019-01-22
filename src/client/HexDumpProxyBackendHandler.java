@@ -33,16 +33,12 @@ public class HexDumpProxyBackendHandler extends ChannelInboundHandlerAdapter {
         log.info("##################目标服务器向代理写入数据#######################");
         InetSocketAddress fromAddress = (InetSocketAddress)ctx.channel().remoteAddress();
         log.debug("数据来自:{}",fromAddress.getHostName());
-        outbound2LocalChannel.writeAndFlush(msg).addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) {
-                if (future.isSuccess()) {
-                    InetSocketAddress toAddress = (InetSocketAddress)outbound2LocalChannel.remoteAddress();
-                    log.debug("数据发往:{}",toAddress.getHostName());
-                    ctx.channel().read();
-                } else {
-                    future.channel().close();
-                }
+        outbound2LocalChannel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                InetSocketAddress toAddress = (InetSocketAddress)outbound2LocalChannel.remoteAddress();
+                log.debug("数据发往:{}",toAddress.getHostName());
+            } else {
+                future.channel().close();
             }
         });
     }
