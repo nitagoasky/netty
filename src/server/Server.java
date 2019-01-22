@@ -1,16 +1,13 @@
 package server;
 
-import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
-import java.net.InetSocketAddress;
 
 public class Server {
 
@@ -22,6 +19,16 @@ public class Server {
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
+
+                    .option(ChannelOption.SO_BACKLOG, 1024)
+                    // 发送缓冲器
+                    .option(ChannelOption.SO_SNDBUF, 1024)
+                    // 接收缓冲器
+                    .option(ChannelOption.SO_RCVBUF, 1024)
+                    // 接收缓冲分配器
+                    .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(256, 2048, 65536))
+                    // work线程参数设置
+                    .childOption(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(256, 2048, 65536))
                     .childHandler(new ChannelInitializer<Channel>() {
 
                         @Override

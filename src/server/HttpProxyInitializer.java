@@ -18,11 +18,8 @@ public class HttpProxyInitializer extends ChannelInitializer {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         ch.pipeline().addLast(new HttpClientCodec());
-//        ch.pipeline().addLast(new HttpObjectAggregator(1 << 30));
-//        ch.pipeline().addLast(new HttpContentCompressor());
-
         ch.pipeline().addLast(new HttpObjectAggregator(1 << 30));
-        ch.pipeline().addLast(new ChunkedWriteHandler());
+//        ch.pipeline().addLast(new ChunkedWriteHandler());
         ch.pipeline().addLast(new HttpProxyClientHandle(clientChannel));
     }
 }
