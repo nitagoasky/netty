@@ -1,3 +1,6 @@
 /target
 /rbserver_logs
 dependency-reduced-pom.xmls
+/.idea
+netty.iml
+/out
